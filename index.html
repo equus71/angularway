@@ -33,6 +33,16 @@
     <!--[if lt IE 9]>
     <script src="lib/js/html5shiv.js"></script>
     <![endif]-->
+
+    <style>
+        html.jobad body {
+  background: -webkit-linear-gradient(90deg, #4b6cb7 10%, #182848 90%); /* Chrome 10+, Saf5.1+ */
+  background:    -moz-linear-gradient(90deg, #4b6cb7 10%, #182848 90%); /* FF3.6+ */
+  background:     -ms-linear-gradient(90deg, #4b6cb7 10%, #182848 90%); /* IE10 */
+  background:      -o-linear-gradient(90deg, #4b6cb7 10%, #182848 90%); /* Opera 11.10+ */
+  background:         linear-gradient(90deg, #4b6cb7 10%, #182848 90%); /* W3C */
+        }
+    </style>
 </head>
 
 <body>
@@ -137,9 +147,9 @@
         <section>
             <h3>Dlaczego tak jest angular-way?</h3>
             <ul>
-                <li class="fragment roll-in">Szablon nie zawiera kodu</li>
                 <li class="fragment roll-in">Szablon jest semantyczny</li>
-                <li class="fragment roll-in">Controller nie zawiera szablonu</li>
+                <li class="fragment roll-in">Szablon nie zawiera kodu</li>
+                <li class="fragment roll-in">Controller nie zawiera elementów szablonu</li>
                 <li class="fragment roll-in">podsumowując: Separation of concerns</li>
             </ul>
         </section>
@@ -170,15 +180,40 @@
         <section>
             <h2>Dyrektywy - rozszerzenie HTMLa</h2>
 
-            <p>Cele:</p>
+            <!--<p>Cele:</p>-->
             <ul>
+                <li class="fragment roll-in">Semantyczny HTML</li>
                 <li class="fragment roll-in">Izolacja operacji na DOM</li>
                 <li class="fragment roll-in">Tworzenie re-używalnych komponentów</li>
-                <li class="fragment roll-in">Semantyczny HTML</li>
             </ul>
             <aside class="notes">
                 Angular nietworzy nowego języka do opisu treści, rozszerza istniejący.
                 W angularze 2.0 dyrektywa i controllery zostaną zastąpione komponentami. 
+            </aside>
+        </section>
+
+                <section>
+        <h3>Dyrektywa zapewniają semantyczność</h3>
+<pre>
+<code>.directive('ngWroclawSpeech', function () {
+    return {
+        restrict: 'E',
+        scope: {
+            speech: "="
+        },
+        templateUrl: 'ngWroclawSpeech.html'
+    }
+});
+</code>
+</pre>
+ngWroclawSpeech.html:
+<pre><code><div>
+    <h3>#{{speech.meetingNumber}} {{speech.title}}</h3>
+    <p>speaker: {{speech.author}}</p>
+</div>
+</code></pre>
+            <aside class="notes">
+                Gdzie jest zysk? Ktoś kto będzie musiał przeczytać kod i zobaczy w szablonie tę dyrektywę od razu wie, nie wchodząc w nią jaki jest jej cel - przedstawić jedną przemowę.
             </aside>
         </section>
 
@@ -229,33 +264,58 @@
             </aside>
         </section>
 
-        <!--TODO: może jeszcze slajd odnośnie semantyczności i reużywalności-->
-
         <section>
             <h2>III. Jeszcze głebszy podział logiki</h2>
             <aside class="notes">
-                Co zrobić z logiką, która jest oderwana od szablonów? 
+                Jak podzielić logikę jednego elemntu, która się rozrasta?
             </aside>
         </section>
 
         <section>
             <h3>Dependency Injection</h3>
+<pre>
+<code>endPointService.$inject = ['$http'];
 
+funtion endPointService($http){
+    //kod wykorzystujący $http
+}
+</code>
+</pre>
             <aside class="notes">
-
+                Po co? Wiadomo, czego wymaga element do działania. Nie da się stworzyć cyklu. Każdą zależność można użyć ponownie.
             </aside>
         </section>
 
         <section>
-            <h3>Service, factory, provider</h3>
-            <!--TODO: co to za obiekty-->
-            <!--dry-->
-            <!--wszystko się kręci w około dzielenia kodu według zastosowań. MVVM rozdziela szablony od logiki, dyrektywy-->
-            <!--pozwalają podzielić te elementy na mniejsze.-->
-            <!--Serwisy, fabryki i dostawcy pozwalają podzielić -->
-            <aside class="notes">
+            <h3>Service, factory, provider, value, constant</h3>
+            <ul>
+                <li class="fragment roll-in">Wszystkie to usługi (różne warianty <em>providera</em>)</li>
+                <li class="fragment roll-in">Mogą być wstrzykiwane przez DI zarówno do innych usług jak i obiektów specjalnych</li>
+                <li class="fragment roll-in">Są formą enkapsulacji pewnych kawałków logiki</li>
+            </ul>
 
+            <aside class="notes">
+            Wszystko się kręci w około dzielenia kodu według zastosowań. MVVM rozdziela szablony od logiki, dyrektywy
+            pozwalają podzielić te elementy na mniejsze.
+            Serwisy, fabryki i dostawcy pozwalają wydzielić pewne operacje z dyrektyw i controllerów (DRY + separation of concerns).
             </aside>
+        </section>
+
+                <section>
+            <h3>Usługa</h3>
+<pre>
+<code>.factory('endPointService', endPointService);
+
+function endPointService($http){
+    return {
+        get: get
+    }
+    function get(){
+        return $http.get('/endPoint');
+    }
+}
+</code>
+</pre>
         </section>
 
         <section>
@@ -272,7 +332,7 @@
                 jeden mógł się jeszcze nie wykonać.
             </p>
 
-            <p><em>Ten łączący element jest obietnicą pewnej wartości.</em></p>
+            <p><em>Nazwa obietnica odzwierciedla działanie - obietnica pewnej zwracanej wartości.</em></p>
             <aside class="notes">
                 Obietnice jako natywne mają trafić do JS (już są w niektórych przeglądarkach). 
             </aside>
@@ -281,16 +341,16 @@
         <section>
             <h3>Działanie obietnice</h3>
 <pre>
-<code>var promise = $http.get('/endPoint');
+<code>var result_promise = $http.get('/endPoint');
 
-promise.then(endPointSuccessFn, endPointErrorFn);
+result_promise.then(endPointSuccessFn, endPointErrorFn);
 </code>
 </pre>
 
 <pre class="fragment roll-in">
-<code>var promise = endPointService.get();
+<code>var result_promise = endPointService.get();
 
-promise.then(endPointSuccessFn, endPointErrorFn);
+result_promise.then(endPointSuccessFn, endPointErrorFn);
 </code>
 </pre>
         </section>
@@ -323,14 +383,26 @@ $q.when([promise1, promise2])
             </ul>
         </section>
 
-
         <section>
-            <!--TODO: podsumowanie-->
-
+            <h2>V. Podsumowanie</h2>
         </section>
 
-        <section data-background-color="#33aa11">
-            <!--TODO: ogłoszenie o prace-->
+        <section>
+            <ul>
+                <li class="">Angular dostarcza wzorce do tworzenia dobrego softwaru</li>
+                <li class="fragment roll-in">Te wzorce stanowią spójny zestaw narzędzi</li>
+                <li class="fragment roll-in">Wybór tych wzorców przez twórców i społeczność Angulara to jest właśnie <strong>Angular-way</strong></li>
+            </ul>
+            <aside class="notes">
+                Mam nadzieję, że mimo naiwnych przykładów przekonałem Was do tego, że to wzorce do tworzenia dobrego softwaru.
+            </aside>
+        </section>
+
+        <section data-background-color="#4b6cb7">
+            <img src="http://www.ue.wroc.pl/p/logotyp2/poziom_pl.png" style="border-width: 0; background: none; box-shadow: none; max-width: 500px;">
+            <p>Interesuje Was zarówno inżynieria bizensu i inżynieria oprogramowania?</p>
+            <p>Sprawdźcie możliwość pracy w międzynarodowym projekcie badawczo-wdrożeniowym:</p>
+            <p><strong><a href="http://s4s.ue.wroc.pl/index.php/career" style="color:white;">s4s.ue.wroc.pl/index.php/career</a></strong></p>
         </section>
         <section>
             <h3>
